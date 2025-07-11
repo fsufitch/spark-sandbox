@@ -65,7 +65,7 @@ services:
     networks:
       - hadoop_network
 
-  spark-worker1:
+  spark-worker1: &SPARK_WORKER
     build:
       context: .
       dockerfile: Containerfile
@@ -81,6 +81,11 @@ services:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
     networks:
       - hadoop_network
+
+  spark-worker2:
+    <<: *SPARK_WORKER
+    container_name: spark-worker2
+    hostname: spark-worker2
 
   spark-connect:
     build:
