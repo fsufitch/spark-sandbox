@@ -9,9 +9,4 @@ build/
 
 # Pyspark
 *.parquet
-*.orc
-*.csv
-*.json
-*.avro
-*.pickle
 artifacts/
