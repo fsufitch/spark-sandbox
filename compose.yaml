@@ -1,0 +1,113 @@
+services:
+  hadoop-name1:
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: hadoop_name_node
+    container_name: hadoop-name1
+    hostname: hadoop-name1
+    ports:
+      - "9870:9870" # Web UI
+      - "9000:9000" # HDFS
+      - "9866:9866" # HDFS IPC
+    environment:
+      HADOOP_IDENT_STRING: hadoop-name1
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+      - ./logs:/opt/hadoop/logs:rw,z
+      - hadoop-name1:/opt/hadoop/data/nameNode
+    networks:
+      - hadoop_network
+
+  hadoop-data1: &DATA1
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: hadoop_data_node
+    container_name: hadoop-data1
+    hostname: hadoop-data1
+    environment:
+      HADOOP_IDENT_STRING: hadoop-data1
+      HADOOP_DATANODE_DATA_DIR: /opt/hadoop/data/dataNode
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+      - ./logs:/opt/hadoop/logs:rw,z
+      - hadoop-data1:/opt/hadoop/data/dataNode
+    networks:
+      - hadoop_network
+
+  hadoop-data2:
+    <<: *DATA1
+    container_name: hadoop-data2
+    hostname: hadoop-data2
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+      - ./logs:/opt/hadoop/logs:rw,z
+      - hadoop-data2:/opt/hadoop/data/dataNode
+
+  spark-master:
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: spark_master
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "8080:8080" # Spark Master UI
+      - "7077:7077" # Spark Master Port
+    environment: &SPARK_ENV
+      SPARK_MASTER_HOST: spark-master
+      SPARK_MASTER_PORT: 7077
+      SPARK_MASTER: "spark://spark-master:7077"
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+    networks:
+      - hadoop_network
+
+  spark-worker1:
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: spark_worker
+    container_name: spark-worker1
+    hostname: spark-worker1
+    environment:
+      <<: *SPARK_ENV
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: "1g"
+    command: ["/opt/spark/sbin/start-worker.sh", "spark://spark-master:7077"]
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+    networks:
+      - hadoop_network
+
+  spark-connect:
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: spark_connect
+    container_name: spark-connect
+    hostname: spark-connect
+    environment:
+      <<: *SPARK_ENV
+    ports:
+      - "4040:4040" # Spark Connect UI
+      - "15002:15002" # Spark Connect Port
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+    networks:
+      - hadoop_network
+
+volumes:
+  hadoop-name1:
+  hadoop-data1:
+  hadoop-data2:
+
+networks:
+  hadoop_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.77.0.0/16

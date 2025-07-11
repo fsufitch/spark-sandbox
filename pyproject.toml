@@ -1,0 +1,31 @@
+[project]
+name = "spark-sandbox"
+version = "0.1.0"
+description = ""
+
+authors = [{ name = "Filip Sufitchi", email = "fsufitchi@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["pyspark[connect] (>=4.0.0,<5.0.0)"]
+
+[tool.poetry]
+package-mode = false
+
+
+[tool.poetry.group.dev.dependencies]
+flake8-pyproject = "^1.2.3"
+black = "^25.1.0"
+isort = "^5.10.1"
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = [
+    "E501", # Line too long
+    "W503", # Line break before binary operator
+    "F401", # Module imported but unused
+    "F403", # 'from module import *' used; unable to detect unused names
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
