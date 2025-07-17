@@ -22,6 +22,16 @@ podman-compose up -d
 
 `-d` is used to run the containers in detached mode. This is better than not, as it means the cluster will survive your terminal closing. It also lends itself more easily to monitoring the logs using `podman-compose logs ...` for a specific container, as the default "multiplexed" log stream is quite overwhelming.
 
+### Grant unauthenticated access to the Hadoop FS
+
+This setup does not use any authentication for the Hadoop File System (HDFS). This is done to simplify the setup and allow easy access to the files stored in HDFS. However, this is not recommended for production environments, as it poses a security risk.
+
+The default Hadoop setup does not allow users to write to the HDFS root directory. To allow this, you need to run the following command:
+
+```bash
+podman exec hadoop-name1 hdfs dfs -chmod 777 /
+```
+
 ### Stop the cluster
 
 ```bash
@@ -87,10 +97,11 @@ The stack configured by this file includes:
 | ----- | -------------------- | ----------------------------------------- |
 | 9870  | hadoop-name1         | HTTP port for the Hadoop NameNode web UI. |
 | 9000  | hadoop-name1         | HDFS main port.                           |
-| 9866  | hadoop-name1         | HDFS IPC                                  |
-| 9871  | hadoop-data1         | Web UI for the Hadoop DataNode 1.         |
-| 9871  | hadoop-data2         | Web UI for the Hadoop DataNode 2.         |
+| 9866  | hadoop-name1         | HDFS IPC port.                            |
+| 9864  | hadoop-data1         | Web UI for the Hadoop DataNode 1.         |
+| 9865  | hadoop-data2         | Web UI for the Hadoop DataNode 2.         |
 | 8080  | spark-master         | Spark master web UI.                      |
+| 7077  | spark-master         | Spark master port.                        |
 | 8081  | spark-worker1        | Spark worker 1 web UI.                    |
 | 8082  | spark-worker2        | Spark worker 2 web UI.                    |
 | 18080 | spark-history-server | Spark history server web UI.              |

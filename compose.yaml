@@ -27,7 +27,7 @@ services:
     container_name: hadoop-data1
     hostname: hadoop-data1
     ports:
-      - "9871:9871" # Web UI
+      - "9864:9864" # Web UI
     environment:
       HADOOP_IDENT_STRING: hadoop-data1
       HADOOP_DATANODE_DATA_DIR: /opt/hadoop/data/dataNode
@@ -43,7 +43,7 @@ services:
     container_name: hadoop-data2
     hostname: hadoop-data2
     ports:
-      - "9871:9871" # Web UI
+      - "9865:9865" # Web UI
     volumes:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
       - ./logs:/opt/hadoop/logs:rw,z
@@ -80,9 +80,10 @@ services:
       - "18080:18080" # Spark History Server UI
     environment:
       <<: *SPARK_ENV
-      SPARK_HISTORY_OPTS: "-Dspark.history.fs.logDirectory=hdfs://hadoop-name1:9000/spark-logs"
+      SPARK_HISTORY_OPTS: "-Dspark.history.fs.logDirectory=file:///mnt/spark-history"
     volumes:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+      - spark-history:/mnt/spark-history:rw,z
     networks:
       - spark_sandbox
 
@@ -110,7 +111,7 @@ services:
     container_name: spark-worker2
     hostname: spark-worker2
     ports:
-      - "8082:8082" # Spark Worker UI
+      - "8082:8081" # Spark Worker UI
 
   spark-connect:
     build:
@@ -133,6 +134,7 @@ volumes:
   hadoop-name1:
   hadoop-data1:
   hadoop-data2:
+  spark-history:
 
 networks:
   spark_sandbox:
