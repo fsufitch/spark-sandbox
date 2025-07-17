@@ -29,7 +29,7 @@ This setup does not use any authentication for the Hadoop File System (HDFS). Th
 The default Hadoop setup does not allow users to write to the HDFS root directory. To allow this, you need to run the following command:
 
 ```bash
-podman exec hadoop-name1 hdfs dfs -chmod 777 /
+podman-compose exec hadoop-name1 hdfs dfs -chmod 777 /
 ```
 
 ### Stop the cluster
