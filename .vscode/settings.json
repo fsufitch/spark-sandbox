@@ -1,3 +1,4 @@
 {
-    "docker.lsp.experimental.vulnerabilityScanning": false
+    "docker.lsp.experimental.vulnerabilityScanning": false,
+    "ansible.python.interpreterPath": "/home/fsufitch/code/spark-sandbox/.venv/bin/python"
 }

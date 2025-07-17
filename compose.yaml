@@ -17,7 +17,7 @@ services:
       - ./logs:/opt/hadoop/logs:rw,z
       - hadoop-name1:/opt/hadoop/data/nameNode
     networks:
-      - hadoop_network
+      - spark_sandbox
 
   hadoop-data1: &DATA1
     build:
@@ -26,6 +26,8 @@ services:
       target: hadoop_data_node
     container_name: hadoop-data1
     hostname: hadoop-data1
+    ports:
+      - "9871:9871" # Web UI
     environment:
       HADOOP_IDENT_STRING: hadoop-data1
       HADOOP_DATANODE_DATA_DIR: /opt/hadoop/data/dataNode
@@ -34,12 +36,14 @@ services:
       - ./logs:/opt/hadoop/logs:rw,z
       - hadoop-data1:/opt/hadoop/data/dataNode
     networks:
-      - hadoop_network
+      - spark_sandbox
 
   hadoop-data2:
     <<: *DATA1
     container_name: hadoop-data2
     hostname: hadoop-data2
+    ports:
+      - "9871:9871" # Web UI
     volumes:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
       - ./logs:/opt/hadoop/logs:rw,z
@@ -63,7 +67,24 @@ services:
     volumes:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
     networks:
-      - hadoop_network
+      - spark_sandbox
+
+  spark-history-server:
+    build:
+      context: .
+      dockerfile: Containerfile
+      target: spark_history_server
+    container_name: spark-history-server
+    hostname: spark-history-server
+    ports:
+      - "18080:18080" # Spark History Server UI
+    environment:
+      <<: *SPARK_ENV
+      SPARK_HISTORY_OPTS: "-Dspark.history.fs.logDirectory=hdfs://hadoop-name1:9000/spark-logs"
+    volumes:
+      - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
+    networks:
+      - spark_sandbox
 
   spark-worker1: &SPARK_WORKER
     build:
@@ -72,6 +93,8 @@ services:
       target: spark_worker
     container_name: spark-worker1
     hostname: spark-worker1
+    ports:
+      - "8081:8081" # Spark Worker UI
     environment:
       <<: *SPARK_ENV
       SPARK_WORKER_CORES: 2
@@ -80,12 +103,14 @@ services:
     volumes:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
     networks:
-      - hadoop_network
+      - spark_sandbox
 
   spark-worker2:
     <<: *SPARK_WORKER
     container_name: spark-worker2
     hostname: spark-worker2
+    ports:
+      - "8082:8082" # Spark Worker UI
 
   spark-connect:
     build:
@@ -102,7 +127,7 @@ services:
     volumes:
       - ./hadoop-config:/opt/hadoop/etc/hadoop:ro,z
     networks:
-      - hadoop_network
+      - spark_sandbox
 
 volumes:
   hadoop-name1:
@@ -110,7 +135,7 @@ volumes:
   hadoop-data2:
 
 networks:
-  hadoop_network:
+  spark_sandbox:
     driver: bridge
     ipam:
       driver: default
